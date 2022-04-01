@@ -6,9 +6,13 @@ public class Player_movement : MonoBehaviour
 {
     public GameObject PlayerObject;
     public Vector3 PlayerPos;
+    public float PlayerPosX;
+    public float PlayerPosY;
+    public float PlayerPosZ;
     public float Speed;
     public float MaxSpeed;
     public float SpeedUp;
+    public float RatioBraking = 0.1f;
 
     float InputVertical = Input.GetAxis("Vertical");
     float InputHorizontal = Input.GetAxis("Horizontal");
@@ -24,6 +28,12 @@ public class Player_movement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // кек
+        PlayerPos = new Vector3(PlayerPosX, PlayerPosY, PlayerPosZ);
+
+        //PlayerPosX;
+
+        //PlayerPosY;
+
+        //PlayerPosZ;
     }
 }
