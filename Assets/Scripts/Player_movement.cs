@@ -8,9 +8,11 @@ public class Player_movement : MonoBehaviour
     public float Speed;
     public float MaxSpeed;
     public float SpeedUp;
+    public float RatioSprintSpeed;
     public float RatioBraking;
     public float PowerJump;
     public float PowerGravity;
+    public float Sensitivity;
 
     CharacterController PlayerControl;
 
@@ -29,56 +31,112 @@ public class Player_movement : MonoBehaviour
 
         float InVertical = Input.GetAxis("Vertical");
         float InHorizontal = Input.GetAxis("Horizontal");
-        float InJump = Input.GetAxis("Jump");
         float InSquat = Input.GetAxis("Squat");
+        float InSprint = Input.GetAxis("Sprint");
 
-        float PlayerHeight = PlayerControl.height;
+        bool SprintingMod = false;
+
+        float PlayerHeight = 1;
         float PlayerHeightStand = PlayerHeight;
         float PlayerHeightSquat = PlayerHeight * 0.6f;
 
+        PlayerControl.transform.Rotate(0, Input.GetAxis("Mouse X") * Sensitivity, 0);
+
+        if (InSquat != 0)
+        {
+            PlayerObject.GetComponent<CharacterController>().height = PlayerHeightSquat; // Для теста "приседаний"
+        }
+        else
+        {
+            PlayerObject.GetComponent<CharacterController>().height = PlayerHeightStand; // Для теста "приседаний"
+        }
+
+        if (InVertical > 0)
+        {
+            if (SpeedUp < 1)
+            {
+                SpeedUp = SpeedUp + 0.1f;
+            }
+            else
+            {
+                SpeedUp = 1f;
+            }
+        }
+        else if ((InVertical < 0) && (SpeedUp < 0.3f))
+        {
+            if (SpeedUp > -0.5f)
+            {
+                SpeedUp = SpeedUp - 0.05f;
+            }
+            else
+            {
+                SpeedUp = -0.5f;
+            }
+        }
+        else
+        {
+            if(SpeedUp > 0)
+            {
+                SpeedUp = SpeedUp - RatioBraking;
+            }
+            else
+            {
+                SpeedUp = 0;
+            }
+        }
+
+        if (InSprint == 0)
+        {
+            SprintingMod = false;
+        }
+        else
+        {
+            SprintingMod = true;
+        }
+
+
+        if (SprintingMod == false)
+        {
+            PlayerControl.Move(transform.forward * SpeedUp * Speed);
+        }
+        else
+        {
+            PlayerControl.Move(transform.forward * SpeedUp * Speed * RatioSprintSpeed);
+        }
+
+        PlayerControl.Move(transform.right * InHorizontal * Speed/2);
+    }
+
+    
+
+    void FixedUpdate()
+    {
         float JumpSpeed = 0f;
 
         bool Jumped = false;
 
-        if(InSquat != 0)
-        {
-            PlayerHeight = PlayerHeightSquat;
-            PlayerObject.GetComponent<Transform>().localScale = new Vector3(1, PlayerHeightSquat, 1); // Для теста "приседаний"
-        }
-        else
-        {
-            PlayerHeight = PlayerHeightStand;
-            PlayerObject.GetComponent<Transform>().localScale = new Vector3(1, PlayerHeightStand, 1); // Для теста "приседаний"
-        }
+        float InJump = Input.GetAxis("Jump");
 
-        if((PlayerControl.isGrounded == true) && (InJump != 0))
+        PlayerControl.Move(Vector3.down/10);
+
+        if ((PlayerControl.isGrounded == true) && (InJump != 0) && (Jumped == false))
         {
             Jumped = true;
             JumpSpeed = PowerJump;
         }
 
-        if(Jumped == true)
+        if (Jumped == true)
         {
             if (JumpSpeed > 0)
             {
-                JumpSpeed = JumpSpeed - (5 * Time.deltaTime);
+                PlayerControl.Move(Vector3.up * JumpSpeed);
+                JumpSpeed = JumpSpeed - 0.1f;
             }
             else
             {
                 Jumped = false;
+                JumpSpeed = 0;
             }
-            
         }
-
-        PlayerControl.Move(Vector3.up * JumpSpeed);
-
-        PlayerControl.Move(Vector3.forward * InVertical * Speed);
-
-        PlayerControl.Move(Vector3.right * InHorizontal * Speed/2);
-    }
-
-    void FixedUpdate()
-    {
-        PlayerControl.Move(Vector3.down);
     }
 }
